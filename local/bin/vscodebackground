@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+PALETTE="$HOME/.cache/matugen/colors.json"         # <-- change to your actual palette path test
+SETTINGS="$HOME/.config/Code/User/settings.json"   # <-- or Code - Insiders
+
+bg="$(jq -r '.colors.background' "$PALETTE")"
+surface="$(jq -r '.colors.surface' "$PALETTE")"
+surface2="$(jq -r '.colors.surface_variant // .colors.surface' "$PALETTE")"
+accent="$(jq -r '.colors.primary' "$PALETTE")"
+
+tmp="$(mktemp)"
+
+jq \
+  --arg bg "$bg" \
+  --arg surface "$surface" \
+  --arg surface2 "$surface2" \
+  --arg accent "$accent" \
+  '
+  .["workbench.colorCustomizations"] =
+    (.["workbench.colorCustomizations"] // {})
+    + {
+      "editor.background": $bg,
+      "editorGutter.background": $bg,
+      "editorPane.background": $bg,
+      "editorOverviewRuler.border": $bg,
+      "editorOverviewRuler.background": $bg,
+      "sideBar.background": $surface,
+      "activityBar.background": $surface,
+      "panel.background": $surface,
+      "statusBar.background": $surface,
+      "titleBar.activeBackground": $surface,
+      "titleBar.inactiveBackground": $surface,
+
+      "tab.activeBackground": $bg,
+      "tab.inactiveBackground": $bg,
+      "breadcrumb.background": $bg,
+
+      "focusBorder": $accent,
+
+      "editorGroupHeader.tabsBackground": $surface,
+      "editorGroupHeader.noTabsBackground": $surface,
+      "editorGroup.emptyBackground": $surface,
+      "editorGroup.background": $surface,
+      "contrastBorder": $accent,
+      "editorGroup.border": $accent,
+      "sideBar.border": $accent,
+      "panel.border": $accent,
+      "statusBar.border": $accent,
+      "titleBar.border": $accent,
+      "quickInput.background": $surface,
+      "quickInputTitle.background": $surface,
+      "widget.border": $accent,
+      "editorWidget.border": $accent,
+      "editorHoverWidget.border": $accent,
+      "editorSuggestWidget.border": $accent,
+      "input.border": $accent,
+      "dropdown.border": $accent,
+      "pickerGroup.border": $accent,
+  }
+' \
+    "$SETTINGS" > "$tmp"
+
+mv "$tmp" "$SETTINGS"
